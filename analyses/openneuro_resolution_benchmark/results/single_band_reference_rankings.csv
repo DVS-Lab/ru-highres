@@ -1,0 +1,3 @@
+reference_label,axis,reference_voxel_size_mm,comparison_group,n_dataset_resolution_rows,reference_rank_when_smaller_is_better,n_rows_finer_than_reference,n_rows_equal_to_reference,n_rows_coarser_than_reference,n_rows_finer_or_equal_to_reference,n_rows_coarser_or_equal_to_reference,percent_rows_finer_or_equal_to_reference,percent_rows_coarser_or_equal_to_reference
+ru_highres_in_plane,lr,1.75,likely_single_band_or_conventional_epi,6,1,0,0,6,0,6,0.0,100.0
+ru_highres_in_plane,ap,1.75,likely_single_band_or_conventional_epi,6,1,0,0,6,0,6,0.0,100.0

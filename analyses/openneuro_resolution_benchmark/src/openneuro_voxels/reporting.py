@@ -56,6 +56,26 @@ def build_scan_summary(database: Path) -> dict[str, Any]:
             ORDER BY id
             """
         ).fetchall()
+        acquisition_rows = connection.execute(
+            """
+            SELECT
+                COALESCE(acquisition_type, 'unknown') AS acquisition_type,
+                COUNT(*) AS n_files
+            FROM s3_objects
+            GROUP BY COALESCE(acquisition_type, 'unknown')
+            ORDER BY n_files DESC
+            """
+        ).fetchall()
+        metadata_rows = connection.execute(
+            """
+            SELECT
+                COALESCE(metadata_status, 'unknown') AS metadata_status,
+                COUNT(*) AS n_files
+            FROM s3_objects
+            GROUP BY COALESCE(metadata_status, 'unknown')
+            ORDER BY n_files DESC
+            """
+        ).fetchall()
         rows = connection.execute(
             """
             SELECT qc_flags
@@ -114,6 +134,12 @@ def build_scan_summary(database: Path) -> dict[str, Any]:
         "number_failed": failed,
         "failure_percentage": (100.0 * failed / bold_files) if bold_files else 0.0,
         "total_compressed_bytes_retrieved": bytes_retrieved,
+        "metadata_status_counts": {
+            row["metadata_status"]: row["n_files"] for row in metadata_rows
+        },
+        "acquisition_type_counts": {
+            row["acquisition_type"]: row["n_files"] for row in acquisition_rows
+        },
         "number_unique_dataset_resolution_observations": len(resolution_rows),
         "number_datasets_with_one_resolution": sum(
             1 for count in per_dataset.values() if count == 1

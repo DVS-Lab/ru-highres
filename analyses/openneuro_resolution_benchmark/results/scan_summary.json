@@ -1,5 +1,13 @@
 {
+  "acquisition_type_counts": {
+    "likely_single_band_or_conventional_epi": 291,
+    "unknown": 465
+  },
   "failure_percentage": 0.0,
+  "metadata_status_counts": {
+    "found": 291,
+    "missing": 465
+  },
   "number_bold_files_discovered": 756,
   "number_containing_bold_data": 5,
   "number_datasets_with_multiple_resolutions": 2,
@@ -28,12 +36,18 @@
       "finished_at": "2026-06-17T01:55:32+00:00",
       "git_commit": "b107b8ceef2ecb41cef7dc0059f995b51a799f10",
       "started_at": "2026-06-17T01:55:32+00:00"
+    },
+    {
+      "command": "scan",
+      "finished_at": "2026-06-17T15:47:48+00:00",
+      "git_commit": "6844194822e80718d6f77a04141701a53e6da6a9",
+      "started_at": "2026-06-17T15:46:59+00:00"
     }
   ],
-  "scan_summary_created_at": "2026-06-17T01:56:35+00:00",
+  "scan_summary_created_at": "2026-06-17T15:49:18+00:00",
   "software_versions": [
     {
-      "git_commit": "b107b8ceef2ecb41cef7dc0059f995b51a799f10",
+      "git_commit": "6844194822e80718d6f77a04141701a53e6da6a9",
       "n_successful_files": 756,
       "package_version": "0.1.0"
     }

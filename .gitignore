@@ -156,3 +156,9 @@ results/openneuro_voxel_scan.sqlite
 results/*.sqlite
 results/file_level_headers.parquet
 results/*.tmp
+analyses/openneuro_resolution_benchmark/results/openneuro_voxel_scan.sqlite
+analyses/openneuro_resolution_benchmark/results/*.sqlite
+analyses/openneuro_resolution_benchmark/results/file_level_headers.parquet
+analyses/openneuro_resolution_benchmark/results/*.tmp
+analyses/openneuro_resolution_benchmark/openneuro-cache/
+analyses/openneuro_resolution_benchmark/range-responses/

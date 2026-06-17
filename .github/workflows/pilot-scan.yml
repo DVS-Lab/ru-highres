@@ -12,6 +12,9 @@ jobs:
   pilot:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: analyses/openneuro_resolution_benchmark
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,5 +41,5 @@ jobs:
         with:
           name: pilot-results
           path: |
-            results/
-            figures/
+            analyses/openneuro_resolution_benchmark/results/
+            analyses/openneuro_resolution_benchmark/figures/

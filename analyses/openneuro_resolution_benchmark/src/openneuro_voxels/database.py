@@ -13,8 +13,9 @@ from typing import Any
 
 from openneuro_voxels.nifti_header import NiftiHeaderRecord
 from openneuro_voxels.s3 import S3Object
+from openneuro_voxels.sidecars import AcquisitionMetadata
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class VoxelScanDatabase:
@@ -67,6 +68,22 @@ class VoxelScanDatabase:
                 extraction_timestamp TEXT,
                 software_version TEXT,
                 git_commit TEXT,
+                metadata_status TEXT NOT NULL DEFAULT 'not_requested',
+                metadata_source_keys TEXT,
+                metadata_json TEXT,
+                acquisition_type TEXT,
+                acquisition_type_confidence TEXT,
+                multiband_acceleration_factor REAL,
+                slice_acceleration_factor REAL,
+                inplane_acceleration_factor REAL,
+                repetition_time_s REAL,
+                echo_time_s REAL,
+                magnetic_field_strength_t REAL,
+                manufacturer TEXT,
+                pulse_sequence_type TEXT,
+                scanning_sequence TEXT,
+                sequence_name TEXT,
+                protocol_name TEXT,
                 FOREIGN KEY(dataset_accession) REFERENCES datasets(accession)
             );
 
@@ -117,11 +134,41 @@ class VoxelScanDatabase:
             );
             """
         )
+        self._ensure_columns(
+            "s3_objects",
+            {
+                "metadata_status": "TEXT NOT NULL DEFAULT 'not_requested'",
+                "metadata_source_keys": "TEXT",
+                "metadata_json": "TEXT",
+                "acquisition_type": "TEXT",
+                "acquisition_type_confidence": "TEXT",
+                "multiband_acceleration_factor": "REAL",
+                "slice_acceleration_factor": "REAL",
+                "inplane_acceleration_factor": "REAL",
+                "repetition_time_s": "REAL",
+                "echo_time_s": "REAL",
+                "magnetic_field_strength_t": "REAL",
+                "manufacturer": "TEXT",
+                "pulse_sequence_type": "TEXT",
+                "scanning_sequence": "TEXT",
+                "sequence_name": "TEXT",
+                "protocol_name": "TEXT",
+            },
+        )
         self.connection.execute(
             "INSERT OR REPLACE INTO metadata(key, value) VALUES (?, ?)",
             ("schema_version", str(SCHEMA_VERSION)),
         )
         self.connection.commit()
+
+    def _ensure_columns(self, table: str, columns: dict[str, str]) -> None:
+        existing = {
+            str(row["name"])
+            for row in self.connection.execute(f"PRAGMA table_info({table})").fetchall()
+        }
+        for name, declaration in columns.items():
+            if name not in existing:
+                self.connection.execute(f"ALTER TABLE {table} ADD COLUMN {name} {declaration}")
 
     @contextmanager
     def transaction(self) -> Iterator[None]:
@@ -198,13 +245,18 @@ class VoxelScanDatabase:
             return False
         row = self.connection.execute(
             """
-            SELECT scan_status, etag
+            SELECT scan_status, etag, metadata_status
             FROM s3_objects
             WHERE key = ?
             """,
             (key,),
         ).fetchone()
-        return bool(row and row["scan_status"] == "success" and row["etag"] == etag)
+        return bool(
+            row
+            and row["scan_status"] == "success"
+            and row["etag"] == etag
+            and row["metadata_status"] != "not_requested"
+        )
 
     def objects_to_scan(
         self, *, datasets: list[str] | None = None, force: bool = False
@@ -216,7 +268,7 @@ class VoxelScanDatabase:
             clauses.append(f"dataset_accession IN ({placeholders})")
             params.extend(datasets)
         if not force:
-            clauses.append("scan_status != 'success'")
+            clauses.append("(scan_status != 'success' OR metadata_status = 'not_requested')")
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         return list(
             self.connection.execute(
@@ -313,6 +365,32 @@ class VoxelScanDatabase:
                 git_commit,
                 key,
             ),
+        )
+
+    def record_acquisition_metadata(self, *, key: str, metadata: AcquisitionMetadata) -> None:
+        values = metadata.as_database_values()
+        self.connection.execute(
+            """
+            UPDATE s3_objects
+            SET metadata_status=:metadata_status,
+                metadata_source_keys=:metadata_source_keys,
+                metadata_json=:metadata_json,
+                acquisition_type=:acquisition_type,
+                acquisition_type_confidence=:acquisition_type_confidence,
+                multiband_acceleration_factor=:multiband_acceleration_factor,
+                slice_acceleration_factor=:slice_acceleration_factor,
+                inplane_acceleration_factor=:inplane_acceleration_factor,
+                repetition_time_s=:repetition_time_s,
+                echo_time_s=:echo_time_s,
+                magnetic_field_strength_t=:magnetic_field_strength_t,
+                manufacturer=:manufacturer,
+                pulse_sequence_type=:pulse_sequence_type,
+                scanning_sequence=:scanning_sequence,
+                sequence_name=:sequence_name,
+                protocol_name=:protocol_name
+            WHERE key=:key
+            """,
+            {**values, "key": key},
         )
 
     def record_error(

@@ -6,6 +6,7 @@ from openneuro_voxels.bids_entities import parse_bids_entities
 from openneuro_voxels.database import VoxelScanDatabase
 from openneuro_voxels.nifti_header import header_to_record
 from openneuro_voxels.s3 import S3Object
+from openneuro_voxels.sidecars import classify_acquisition_metadata
 
 
 def test_successful_same_etag_is_skipped(tmp_path) -> None:
@@ -30,6 +31,14 @@ def test_successful_same_etag_is_skipped(tmp_path) -> None:
             retry_count=0,
             software_version="test",
             git_commit="deadbeef",
+        )
+
+    assert not db.should_skip_success(key, "abc")
+
+    with db.transaction():
+        db.record_acquisition_metadata(
+            key=key,
+            metadata=classify_acquisition_metadata({"RepetitionTime": 2.0}),
         )
 
     assert db.should_skip_success(key, "abc")

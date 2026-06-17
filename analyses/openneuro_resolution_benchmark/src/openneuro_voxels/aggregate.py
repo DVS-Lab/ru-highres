@@ -39,6 +39,22 @@ def load_file_level_headers(database: Path) -> pd.DataFrame:
                 o.extraction_timestamp,
                 o.software_version,
                 o.git_commit,
+                o.metadata_status,
+                o.metadata_source_keys,
+                o.metadata_json,
+                o.acquisition_type,
+                o.acquisition_type_confidence,
+                o.multiband_acceleration_factor,
+                o.slice_acceleration_factor,
+                o.inplane_acceleration_factor,
+                o.repetition_time_s,
+                o.echo_time_s,
+                o.magnetic_field_strength_t,
+                o.manufacturer,
+                o.pulse_sequence_type,
+                o.scanning_sequence,
+                o.sequence_name,
+                o.protocol_name,
                 h.header_type,
                 h.image_shape,
                 h.ndim,
@@ -71,6 +87,10 @@ def load_file_level_headers(database: Path) -> pd.DataFrame:
     frame["best_affine"] = frame["best_affine"].map(_loads_json)
     frame["orientation_codes"] = frame["orientation_codes"].map(_loads_json)
     frame["qc_flags"] = frame["qc_flags"].map(lambda value: tuple(_loads_json(value) or []))
+    frame["metadata_source_keys"] = frame["metadata_source_keys"].map(
+        lambda value: tuple(_loads_json(value) or [])
+    )
+    frame["metadata_json"] = frame["metadata_json"].map(_loads_json)
     frame["resting_state"] = frame["task"].eq("rest")
     return frame
 
@@ -144,6 +164,28 @@ def create_dataset_resolution_summary(
                 "acquisition_labels": _join_unique(group["acquisition"]),
                 "run_labels": _join_unique(group["run"]),
                 "echo_labels": _join_unique(group["echo"]),
+                "acquisition_type_labels": _join_unique(group["acquisition_type"]),
+                "likely_single_band_present": bool(
+                    group["acquisition_type"].eq("likely_single_band_or_conventional_epi").any()
+                ),
+                "multiband_or_sms_present": bool(
+                    group["acquisition_type"].eq("multiband_or_sms").any()
+                ),
+                "unknown_acquisition_type_present": bool(
+                    group["acquisition_type"].isna().any()
+                    or group["acquisition_type"].eq("unknown").any()
+                ),
+                "metadata_status_labels": _join_unique(group["metadata_status"]),
+                "multiband_acceleration_factors": _join_unique_numeric(
+                    group["multiband_acceleration_factor"]
+                ),
+                "slice_acceleration_factors": _join_unique_numeric(
+                    group["slice_acceleration_factor"]
+                ),
+                "inplane_acceleration_factors": _join_unique_numeric(
+                    group["inplane_acceleration_factor"]
+                ),
+                "repetition_times_s": _join_unique_numeric(group["repetition_time_s"]),
                 "dataset_bold_files": total,
                 "percent_dataset_bold_files": (100.0 * n_files / total) if total else 0.0,
                 "representative_s3_key": group["key"].sort_values().iloc[0],
@@ -231,6 +273,72 @@ def create_common_triplets(summary: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def create_single_band_summary(summary: pd.DataFrame) -> pd.DataFrame:
+    """Filter dataset-resolution rows to likely single-band/conventional EPI data."""
+
+    if summary.empty or "acquisition_type_labels" not in summary:
+        return summary.iloc[0:0].copy()
+    return summary[
+        summary["likely_single_band_present"].astype(bool)
+        & ~summary["multiband_or_sms_present"].astype(bool)
+        & ~summary["unknown_acquisition_type_present"].astype(bool)
+    ].copy()
+
+
+def create_single_band_rankings(
+    summary: pd.DataFrame,
+    *,
+    reference_lr_mm: float = 1.75,
+    reference_ap_mm: float = 1.75,
+) -> pd.DataFrame:
+    """Rank the study's in-plane voxel size against likely single-band OpenNeuro rows."""
+
+    single_band = create_single_band_summary(summary)
+    rows: list[dict[str, Any]] = []
+    for axis, column, reference in [
+        ("lr", "voxel_size_lr_mm", reference_lr_mm),
+        ("ap", "voxel_size_ap_mm", reference_ap_mm),
+    ]:
+        values = single_band[column].dropna()
+        n = int(values.shape[0])
+        if n == 0:
+            percent_finer_or_equal = None
+            percent_coarser_or_equal = None
+            n_finer_or_equal = 0
+            n_finer = 0
+            n_equal = 0
+            n_coarser = 0
+            n_coarser_or_equal = 0
+            rank = None
+        else:
+            n_finer_or_equal = int((values <= reference).sum())
+            n_finer = int((values < reference).sum())
+            n_equal = int((values == reference).sum())
+            n_coarser = int((values > reference).sum())
+            n_coarser_or_equal = int((values >= reference).sum())
+            rank = n_finer + 1
+            percent_finer_or_equal = 100.0 * n_finer_or_equal / n
+            percent_coarser_or_equal = 100.0 * n_coarser_or_equal / n
+        rows.append(
+            {
+                "reference_label": "ru_highres_in_plane",
+                "axis": axis,
+                "reference_voxel_size_mm": reference,
+                "comparison_group": "likely_single_band_or_conventional_epi",
+                "n_dataset_resolution_rows": n,
+                "reference_rank_when_smaller_is_better": rank,
+                "n_rows_finer_than_reference": n_finer,
+                "n_rows_equal_to_reference": n_equal,
+                "n_rows_coarser_than_reference": n_coarser,
+                "n_rows_finer_or_equal_to_reference": n_finer_or_equal,
+                "n_rows_coarser_or_equal_to_reference": n_coarser_or_equal,
+                "percent_rows_finer_or_equal_to_reference": percent_finer_or_equal,
+                "percent_rows_coarser_or_equal_to_reference": percent_coarser_or_equal,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def write_aggregation_outputs(
     *,
     database: Path,
@@ -247,6 +355,8 @@ def write_aggregation_outputs(
     )
     native = create_native_axis_summary(file_headers)
     common = create_common_triplets(summary)
+    single_band = create_single_band_summary(summary)
+    single_band_rankings = create_single_band_rankings(summary)
 
     outputs = {
         "file_level_headers_parquet": config.results_dir / "file_level_headers.parquet",
@@ -258,6 +368,10 @@ def write_aggregation_outputs(
         / "dataset_resolution_sensitivity.csv",
         "dataset_resolution_native_summary_csv": config.results_dir
         / "dataset_resolution_native_summary.csv",
+        "dataset_resolution_single_band_summary_csv": config.results_dir
+        / "dataset_resolution_single_band_summary.csv",
+        "single_band_reference_rankings_csv": config.results_dir
+        / "single_band_reference_rankings.csv",
         "common_resolution_triplets_csv": config.results_dir / "common_resolution_triplets.csv",
     }
 
@@ -266,12 +380,19 @@ def write_aggregation_outputs(
     summary.to_parquet(outputs["dataset_resolution_summary_parquet"], index=False)
     sensitivity.to_csv(outputs["dataset_resolution_sensitivity_csv"], index=False)
     native.to_csv(outputs["dataset_resolution_native_summary_csv"], index=False)
+    single_band.to_csv(outputs["dataset_resolution_single_band_summary_csv"], index=False)
+    single_band_rankings.to_csv(outputs["single_band_reference_rankings_csv"], index=False)
     common.to_csv(outputs["common_resolution_triplets_csv"], index=False)
     return outputs
 
 
 def _join_unique(series: pd.Series) -> str:
     return ";".join(sorted(str(value) for value in series.dropna().unique()))
+
+
+def _join_unique_numeric(series: pd.Series) -> str:
+    values = sorted({float(value) for value in series.dropna().unique()})
+    return ";".join(f"{value:g}" for value in values)
 
 
 def _loads_json(value: str | None) -> Any:

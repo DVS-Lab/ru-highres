@@ -29,6 +29,7 @@ from openneuro_voxels.s3 import (
     list_bold_objects,
     list_dataset_prefixes,
 )
+from openneuro_voxels.sidecars import classify_acquisition_metadata, load_acquisition_metadata
 
 DEFAULT_RANGE_STEPS = (8 * 1024, 32 * 1024, 128 * 1024, 512 * 1024, 2 * 1024 * 1024)
 
@@ -191,6 +192,19 @@ def scan_one_object(
                     record = parse_header_from_object_bytes(
                         payload, is_gzipped=obj.key.endswith(".nii.gz")
                     )
+                    try:
+                        metadata = load_acquisition_metadata(
+                            client,
+                            bucket=bucket,
+                            key=obj.key,
+                            entities=obj.entities,
+                        )
+                    except (BotoCoreError, ClientError, OSError):
+                        metadata = classify_acquisition_metadata(
+                            {},
+                            metadata_status="error",
+                            source_keys=(),
+                        )
                 except InsufficientHeaderBytes as exc:
                     last_error = exc
                     break
@@ -202,6 +216,7 @@ def scan_one_object(
                     continue
                 else:
                     with db.transaction():
+                        db.record_acquisition_metadata(key=obj.key, metadata=metadata)
                         db.record_header(
                             key=obj.key,
                             record=record,
@@ -271,9 +286,16 @@ def get_git_commit() -> str | None:
             capture_output=True,
             text=True,
         )
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     except (OSError, subprocess.CalledProcessError):
         return None
-    return result.stdout.strip()
+    commit = result.stdout.strip()
+    return f"{commit}-dirty" if status.stdout.strip() else commit
 
 
 def _load_rows_to_scan(

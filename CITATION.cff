@@ -1,9 +1,18 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it using the metadata below."
-title: "OpenNeuro BOLD Voxel Resolution Scanner"
-version: 0.1.0
+message: "If you use this repository, please cite the associated manuscript."
+title: "Differential representations for affective and informative components of reward in the striatum and hippocampus"
 authors:
-  - family-names: "DVS Lab"
-date-released: 2026-06-16
+  - family-names: "Shen"
+    given-names: "Xinxu"
+  - family-names: "Wang"
+    given-names: "Kainan S."
+  - family-names: "Murty"
+    given-names: "Vishnu P."
+  - family-names: "Delgado"
+    given-names: "Mauricio R."
+  - family-names: "Smith"
+    given-names: "David V."
+doi: "10.1101/2024.09.20.614186"
+date-released: 2024-09-21
 license: MIT
 repository-code: "https://github.com/DVS-Lab/ru-highres"
