@@ -40,6 +40,22 @@ def build_scan_summary(database: Path) -> dict[str, Any]:
             connection,
             "SELECT COALESCE(SUM(compressed_bytes_retrieved), 0) FROM s3_objects",
         )
+        software_rows = connection.execute(
+            """
+            SELECT software_version, git_commit, COUNT(*) AS n_files
+            FROM s3_objects
+            WHERE scan_status = 'success'
+            GROUP BY software_version, git_commit
+            ORDER BY n_files DESC
+            """
+        ).fetchall()
+        run_rows = connection.execute(
+            """
+            SELECT started_at, finished_at, command, git_commit
+            FROM scan_runs
+            ORDER BY id
+            """
+        ).fetchall()
         rows = connection.execute(
             """
             SELECT qc_flags
@@ -74,6 +90,23 @@ def build_scan_summary(database: Path) -> dict[str, Any]:
     return {
         "scan_summary_created_at": utc_now(),
         "openneuro_bucket_snapshot": "current public S3 object tree at scan time",
+        "software_versions": [
+            {
+                "package_version": row["software_version"],
+                "git_commit": row["git_commit"],
+                "n_successful_files": row["n_files"],
+            }
+            for row in software_rows
+        ],
+        "scan_runs": [
+            {
+                "started_at": row["started_at"],
+                "finished_at": row["finished_at"],
+                "command": row["command"],
+                "git_commit": row["git_commit"],
+            }
+            for row in run_rows
+        ],
         "number_openneuro_dataset_prefixes_examined": datasets_examined,
         "number_containing_bold_data": datasets_with_bold,
         "number_bold_files_discovered": bold_files,

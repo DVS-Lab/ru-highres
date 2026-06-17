@@ -39,7 +39,25 @@ def load_file_level_headers(database: Path) -> pd.DataFrame:
                 o.extraction_timestamp,
                 o.software_version,
                 o.git_commit,
-                h.*
+                h.header_type,
+                h.image_shape,
+                h.ndim,
+                h.n_volumes,
+                h.native_voxel_size_x_mm,
+                h.native_voxel_size_y_mm,
+                h.native_voxel_size_z_mm,
+                h.qform_code,
+                h.sform_code,
+                h.best_affine,
+                h.orientation_codes,
+                h.voxel_size_lr_mm,
+                h.voxel_size_ap_mm,
+                h.voxel_size_is_mm,
+                h.axis_mapping_successful,
+                h.canonical_voxel_size_lr_mm,
+                h.canonical_voxel_size_ap_mm,
+                h.canonical_voxel_size_is_mm,
+                h.qc_flags
             FROM s3_objects o
             JOIN nifti_headers h ON h.key = o.key
         """

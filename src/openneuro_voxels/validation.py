@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+import sqlite3
 import tempfile
 from pathlib import Path
 from typing import Any, cast
@@ -12,6 +14,29 @@ from botocore.client import BaseClient
 
 from openneuro_voxels.nifti_header import parse_header_from_object_bytes
 from openneuro_voxels.s3 import get_range
+
+
+def sample_successful_keys(*, database: Path, sample_size: int, seed: int) -> list[str]:
+    """Sample successfully parsed keys reproducibly from a scan database."""
+
+    connection = sqlite3.connect(database)
+    try:
+        rows = connection.execute(
+            """
+            SELECT key
+            FROM s3_objects
+            WHERE scan_status = 'success'
+            ORDER BY key
+            """
+        ).fetchall()
+    finally:
+        connection.close()
+
+    keys = [str(row[0]) for row in rows]
+    if not keys:
+        return []
+    rng = random.Random(seed)
+    return rng.sample(keys, k=min(sample_size, len(keys)))
 
 
 def validate_sample(

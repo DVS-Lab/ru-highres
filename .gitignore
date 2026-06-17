@@ -155,11 +155,4 @@ range-responses/
 results/openneuro_voxel_scan.sqlite
 results/*.sqlite
 results/file_level_headers.parquet
-results/file_level_errors.csv
 results/*.tmp
-
-# Keep generated summary/figure directories but avoid accidental large dumps.
-figures/*.png
-figures/*.pdf
-!figures/README.md
-!results/README.md

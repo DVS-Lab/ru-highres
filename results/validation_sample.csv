@@ -1,0 +1,26 @@
+key,partial_native_zooms,full_native_zooms,max_abs_difference_mm,passes_1e_6_mm
+ds000210/sub-24/func/sub-24_task-cuedSGT_run-03_echo-3_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000210/sub-10/func/sub-10_task-cuedSGT_run-01_echo-3_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000117/sub-11/ses-mri/func/sub-11_ses-mri_task-facerecognition_run-01_bold.nii.gz,"(3.0, 3.0000014305114746, 3.749999761581421)","(3.0, 3.0000014305114746, 3.749999761581421)",0.0,True
+ds000210/sub-24/func/sub-24_task-rest_run-01_echo-1_bold.nii.gz,"(3.0, 2.999999761581421, 2.999999761581421)","(3.0, 2.999999761581421, 2.999999761581421)",0.0,True
+ds000210/sub-17/func/sub-17_task-cuedSGT_run-02_echo-3_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000210/sub-19/func/sub-19_task-cuedSGT_run-01_echo-3_bold.nii.gz,"(3.75, 3.750000238418579, 3.8000004291534424)","(3.75, 3.750000238418579, 3.8000004291534424)",0.0,True
+ds000210/sub-12/func/sub-12_task-cuedSGT_run-01_echo-2_bold.nii.gz,"(3.75, 3.7500033378601074, 3.8000032901763916)","(3.75, 3.7500033378601074, 3.8000032901763916)",0.0,True
+ds000210/sub-03/func/sub-03_task-cuedSGT_run-04_echo-2_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000210/sub-02/func/sub-02_task-cuedSGT_run-04_echo-3_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000210/sub-19/func/sub-19_task-rest_run-01_echo-1_bold.nii.gz,"(3.0, 3.000000238418579, 3.000000238418579)","(3.0, 3.000000238418579, 3.000000238418579)",0.0,True
+ds000210/sub-08/func/sub-08_task-cuedSGT_run-04_echo-2_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000102/sub-16/func/sub-16_task-flanker_run-1_bold.nii.gz,"(3.0, 3.0, 4.0)","(3.0, 3.0, 4.0)",0.0,True
+ds000001/sub-01/func/sub-01_task-balloonanalogrisktask_run-03_bold.nii.gz,"(3.125, 3.125, 4.0)","(3.125, 3.125, 4.0)",0.0,True
+ds000210/sub-27/func/sub-27_task-cuedSGT_run-03_echo-2_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000117/sub-02/ses-mri/func/sub-02_ses-mri_task-facerecognition_run-03_bold.nii.gz,"(2.999999523162842, 3.0000009536743164, 3.8999998569488525)","(2.999999523162842, 3.0000009536743164, 3.8999998569488525)",0.0,True
+ds000210/sub-11/func/sub-11_task-cuedSGT_run-02_echo-1_bold.nii.gz,"(3.75, 3.750000476837158, 3.8000004291534424)","(3.75, 3.750000476837158, 3.8000004291534424)",0.0,True
+ds000210/sub-08/func/sub-08_task-rest_run-01_echo-3_bold.nii.gz,"(3.0, 3.000000238418579, 3.000000238418579)","(3.0, 3.000000238418579, 3.000000238418579)",0.0,True
+ds000210/sub-24/func/sub-24_task-cuedSGT_run-01_echo-2_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000210/sub-18/func/sub-18_task-cuedSGT_run-03_echo-1_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000102/sub-19/func/sub-19_task-flanker_run-2_bold.nii.gz,"(3.0, 3.0, 4.0)","(3.0, 3.0, 4.0)",0.0,True
+ds000210/sub-27/func/sub-27_task-cuedSGT_run-01_echo-1_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000005/sub-11/func/sub-11_task-mixedgamblestask_run-01_bold.nii.gz,"(3.125, 3.125, 4.0)","(3.125, 3.125, 4.0)",0.0,True
+ds000210/sub-03/func/sub-03_task-cuedSGT_run-01_echo-1_bold.nii.gz,"(3.75, 3.75, 3.799999952316284)","(3.75, 3.75, 3.799999952316284)",0.0,True
+ds000005/sub-05/func/sub-05_task-mixedgamblestask_run-01_bold.nii.gz,"(3.125, 3.125, 4.0)","(3.125, 3.125, 4.0)",0.0,True
+ds000210/sub-22/func/sub-22_task-rest_run-01_echo-3_bold.nii.gz,"(3.0, 3.0, 3.0)","(3.0, 3.0, 3.0)",0.0,True

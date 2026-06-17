@@ -15,7 +15,7 @@ from openneuro_voxels.reporting import write_reports
 from openneuro_voxels.s3 import anonymous_openneuro_client, parse_dataset_file, unique_datasets
 from openneuro_voxels.scan import discover as discover_objects
 from openneuro_voxels.scan import discover_and_scan, scan_database
-from openneuro_voxels.validation import validate_sample
+from openneuro_voxels.validation import sample_successful_keys, validate_sample
 
 app = typer.Typer(help="Characterize raw BOLD voxel resolution in public OpenNeuro datasets.")
 console = Console()
@@ -146,6 +146,11 @@ def report(
 def validate(
     key: list[str] | None = typer.Option(None, help="S3 key to validate with full-file GET."),
     key_file: Path | None = typer.Option(None, help="Text file of S3 keys to validate."),
+    database: Path | None = typer.Option(
+        None, help="Scan database to sample successful keys from."
+    ),
+    sample_size: int = typer.Option(25, help="Number of successful files to sample."),
+    seed: int = typer.Option(20260616, help="Random seed for database sampling."),
     output_csv: Path = typer.Option(Path("results/validation_sample.csv")),
     bucket: str = typer.Option("openneuro.org"),
     region: str = typer.Option("us-east-1"),
@@ -161,8 +166,12 @@ def validate(
             for line in key_file.read_text(encoding="utf-8").splitlines()
             if line.strip() and not line.startswith("#")
         )
+    if database:
+        keys.extend(sample_successful_keys(database=database, sample_size=sample_size, seed=seed))
     if not keys:
-        raise typer.BadParameter("Provide --key or --key-file for explicit full-file validation.")
+        raise typer.BadParameter(
+            "Provide --key, --key-file, or --database for explicit full-file validation."
+        )
     client = anonymous_openneuro_client(region_name=region, timeout=timeout)
     frame = validate_sample(
         keys=keys,
