@@ -1,0 +1,19 @@
+[scan]
+bucket = "openneuro.org"
+region = "us-east-1"
+workers = 16
+requests_per_second = 0
+max_range_bytes = 2097152
+retries = 3
+timeout = 30
+fallback = "none"
+
+[aggregation]
+round_decimals = 3
+sensitivity_min_files = 2
+sensitivity_min_dataset_percent = 5.0
+
+[plotting]
+bin_width_mm = 0.1
+main_min_mm = 0.5
+main_max_mm = 6.0

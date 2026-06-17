@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "OpenNeuro BOLD Voxel Resolution Scanner"
+version: 0.1.0
+authors:
+  - family-names: "DVS Lab"
+date-released: 2026-06-16
+license: MIT
+repository-code: "https://github.com/DVS-Lab/ru-highres"

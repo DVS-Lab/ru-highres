@@ -132,3 +132,34 @@ dmypy.json
 bids
 derivatives
 .DS_Store
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+
+# OpenNeuro scan outputs and local retrieval caches
+*.nii
+*.nii.gz
+*.dtseries.nii
+.datalad/
+.gitmodules
+.snakemake/
+openneuro-cache/
+range-responses/
+results/openneuro_voxel_scan.sqlite
+results/*.sqlite
+results/file_level_headers.parquet
+results/file_level_errors.csv
+results/*.tmp
+
+# Keep generated summary/figure directories but avoid accidental large dumps.
+figures/*.png
+figures/*.pdf
+!figures/README.md
+!results/README.md
